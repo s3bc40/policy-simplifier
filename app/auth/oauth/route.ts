@@ -24,8 +24,8 @@ export async function GET(request: Request) {
       if (!profile) {
         const { error: insertError } = await supabase.from("profiles").insert({
           id: data.user.id,
-          role: "FREE",
-          monthly_uses: 0,
+          subscription_tier: "FREE",
+          credits: 5,
         });
 
         if (insertError) {

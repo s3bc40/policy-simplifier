@@ -35,12 +35,12 @@ export default async function SummarizePage() {
           <div className="flex items-center gap-3">
             {profile && (
               <div className="text-sm text-muted-foreground">
-                {profile.role === "FREE" ? (
-                  <span>
-                    {profile.monthly_uses || 0} / 5 summaries used this month
-                  </span>
+                {profile.subscription_tier === "FREE" ? (
+                  <span>{profile.credits || 0} credits available</span>
                 ) : (
-                  <span className="text-primary font-medium">Premium</span>
+                  <span className="text-primary font-medium">
+                    Premium (Unlimited)
+                  </span>
                 )}
               </div>
             )}
