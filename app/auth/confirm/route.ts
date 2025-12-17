@@ -20,7 +20,7 @@ export async function GET(request: Request) {
         .eq("id", data.user.id)
         .single();
 
-      // If no profile exists, create one (for OAuth users)
+      // If no profile exists, create one (for email signup users)
       if (!profile) {
         const { error: insertError } = await supabase.from("profiles").insert({
           id: data.user.id,

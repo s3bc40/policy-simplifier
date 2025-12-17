@@ -5,15 +5,17 @@ import "server-only";
 
 if (
   !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  !process.env.SUPABASE_SERVICE_KEY
+  !process.env.SUPABASE_SERVICE_ROLE_KEY
 ) {
-  throw new Error("Missing Supabase URL or Service Key environment variables.");
+  throw new Error(
+    "Missing Supabase URL or Service Role Key environment variables."
+  );
 }
 
 // This client uses the service key and bypasses RLS for administrative tasks (like usage tracking).
 export const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
   {
     auth: {
       autoRefreshToken: false,

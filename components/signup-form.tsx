@@ -16,42 +16,68 @@ import { useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
-export function LoginForm({
+export function SignupForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/summarize";
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    const supabase = createClient();
     setIsLoading(true);
     setError(null);
+    setSuccess(false);
+
+    // Validate passwords match
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      setIsLoading(false);
+      return;
+    }
+
+    // Validate password strength
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      setIsLoading(false);
+      return;
+    }
+
+    const supabase = createClient();
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/confirm?next=${redirectTo}`,
+          data: {
+            role: "FREE",
+            monthly_uses: 0,
+          },
+        },
       });
 
       if (error) throw error;
 
-      // Redirect after successful login
-      window.location.href = redirectTo;
+      setSuccess(true);
     } catch (error: unknown) {
       setError(
-        error instanceof Error ? error.message : "Invalid email or password"
+        error instanceof Error
+          ? error.message
+          : "An error occurred during signup"
       );
       setIsLoading(false);
     }
   };
 
-  const handleOAuthLogin = async (provider: "github" | "google") => {
+  const handleOAuthSignup = async (provider: "github" | "google") => {
     const supabase = createClient();
     setIsLoading(true);
     setError(null);
@@ -71,17 +97,43 @@ export function LoginForm({
     }
   };
 
+  if (success) {
+    return (
+      <div className={cn("flex flex-col gap-6", className)} {...props}>
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">Check Your Email</CardTitle>
+            <CardDescription>
+              We sent you a confirmation link to <strong>{email}</strong>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground text-center">
+                Click the link in the email to verify your account and start
+                using PolicySimplifier.
+              </p>
+              <Button variant="outline" className="w-full" asChild>
+                <Link href="/auth/login">Back to Login</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Welcome Back</CardTitle>
+          <CardTitle className="text-2xl">Create Account</CardTitle>
           <CardDescription>
-            Sign in to your PolicySimplifier account
+            Get started with PolicySimplifier for free
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleEmailLogin}>
+          <form onSubmit={handleEmailSignup}>
             <div className="flex flex-col gap-6">
               {error && (
                 <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
@@ -107,15 +159,30 @@ export function LoginForm({
                 <Input
                   id="password"
                   type="password"
+                  placeholder="At least 6 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={isLoading}
+                  minLength={6}
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  placeholder="Re-enter your password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   disabled={isLoading}
                 />
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Signing in..." : "Sign In"}
+                {isLoading ? "Creating account..." : "Sign Up"}
               </Button>
 
               <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
@@ -128,7 +195,7 @@ export function LoginForm({
                 <Button
                   variant="outline"
                   type="button"
-                  onClick={() => handleOAuthLogin("github")}
+                  onClick={() => handleOAuthSignup("github")}
                   disabled={isLoading}
                 >
                   <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
@@ -142,7 +209,7 @@ export function LoginForm({
                 <Button
                   variant="outline"
                   type="button"
-                  onClick={() => handleOAuthLogin("google")}
+                  onClick={() => handleOAuthSignup("google")}
                   disabled={isLoading}
                 >
                   <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
@@ -168,12 +235,12 @@ export function LoginForm({
               </div>
 
               <div className="text-center text-sm">
-                Don&apos;t have an account?{" "}
+                Already have an account?{" "}
                 <Link
-                  href="/auth/signup"
+                  href="/auth/login"
                   className="underline underline-offset-4 hover:text-primary"
                 >
-                  Sign up
+                  Sign in
                 </Link>
               </div>
             </div>
