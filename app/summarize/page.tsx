@@ -1,9 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { SummarizeForm } from "@/components/summarize-form";
 import { LogoutButton } from "@/components/logout-button";
 import { ModeToggle } from "@/components/mode-toggle";
 import { FileText } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default async function SummarizePage() {
   // Check authentication
@@ -44,6 +46,9 @@ export default async function SummarizePage() {
                 )}
               </div>
             )}
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/billing">Buy Credits</Link>
+            </Button>
             <ModeToggle />
             <LogoutButton />
           </div>

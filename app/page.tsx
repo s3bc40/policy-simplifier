@@ -18,6 +18,9 @@ export default function LandingPage() {
           <Button variant="ghost" asChild>
             <Link href="/auth/login">Log In</Link>
           </Button>
+          <Button variant="ghost" asChild>
+            <Link href="/billing">Pricing</Link>
+          </Button>
           <Button asChild>
             <Link href="/auth/login">Get Started Free</Link>
           </Button>
