@@ -41,14 +41,29 @@ export async function updateSession(request: NextRequest) {
 
   const user = data?.claims;
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth")
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
+  // Define public routes (accessible without authentication)
+  const publicRoutes = ["/", "/auth"];
+
+  const isPublicRoute = publicRoutes.some(
+    (route) =>
+      request.nextUrl.pathname === route ||
+      request.nextUrl.pathname.startsWith(route + "/")
+  );
+
+  // Redirect unauthenticated users trying to access protected routes
+  if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = "/auth/login";
+    url.searchParams.set("redirect", request.nextUrl.pathname);
+    return NextResponse.redirect(url);
+  }
+
+  // Redirect authenticated users away from login page to their intended destination or summarize
+  if (user && request.nextUrl.pathname === "/auth/login") {
+    const url = request.nextUrl.clone();
+    const redirect = request.nextUrl.searchParams.get("redirect");
+    url.pathname = redirect || "/summarize";
+    url.search = ""; // Clear search params
     return NextResponse.redirect(url);
   }
 
