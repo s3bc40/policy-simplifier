@@ -8,9 +8,6 @@ import { generateText } from "ai";
 import { inputSchema, policySummarySchema, PolicySummary } from "@/lib/schemas";
 import { z } from "zod";
 
-// Business Logic Constant
-const FREE_LIMIT = 5;
-
 // Define the response state structure for the frontend
 type ActionState = {
   result?: PolicySummary;
@@ -52,7 +49,7 @@ export async function summarizePolicy(
   // Fetch user profile and freemium status
   const { data: profile, error: selectError } = await sessionClient
     .from("profiles")
-    .select("role, monthly_uses")
+    .select("subscription_tier, credits")
     .eq("id", user.id)
     .single();
 
@@ -61,11 +58,12 @@ export async function summarizePolicy(
     return { error: "Could not retrieve user profile for usage check." };
   }
 
-  const { role, monthly_uses } = profile;
+  const { subscription_tier, credits } = profile;
 
-  if (role === "FREE" && monthly_uses >= FREE_LIMIT) {
+  // Check if user has credits available
+  if (subscription_tier === "FREE" && (!credits || credits <= 0)) {
     return {
-      error: `Free tier limit of ${FREE_LIMIT} uses reached. Please upgrade to PREMIUM.`,
+      error: `No credits available. Please purchase credits or upgrade to PREMIUM.`,
     };
   }
 
@@ -134,18 +132,26 @@ Remember: Return ONLY the JSON object, no markdown formatting, no extra text.`;
     const summaryData = policySummarySchema.parse(parsedJson);
 
     // ----------------------------------------------------
-    // Step 4: Update Usage (Use Admin Client)
+    // Step 4: Deduct Credit (Use Admin Client)
     // ----------------------------------------------------
-    if (role === "FREE") {
+    if (subscription_tier === "FREE" && credits && credits > 0) {
+      const newCredits = credits - 1;
       const { error: updateError } = await supabaseAdmin
         .from("profiles")
-        .update({ monthly_uses: monthly_uses + 1 })
+        .update({ credits: newCredits })
         .eq("id", user.id);
 
       if (updateError) {
-        console.error("Usage Tracking Error:", updateError);
+        console.error("Credit Deduction Error:", updateError);
       } else {
-        // Revalidate the summarize page to refresh usage count display
+        // Log transaction
+        await supabaseAdmin.from("credits_history").insert({
+          user_id: user.id,
+          amount: -1,
+          reason: "Policy summarization",
+        });
+
+        // Revalidate the summarize page to refresh credits display
         revalidatePath("/summarize");
       }
     }
