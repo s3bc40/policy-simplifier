@@ -18,15 +18,16 @@ export default async function BillingPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/auth/login");
-  }
+  let profile = null;
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
+  if (user) {
+    const { data } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+    profile = data;
+  }
 
   return (
     <div className="min-h-screen bg-linear-to-b from-background to-muted">
@@ -49,19 +50,43 @@ export default async function BillingPage() {
 
       <main className="container mx-auto p-6 max-w-4xl">
         {/* Current Status */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Your Credits</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-4xl font-bold text-primary">
-              {profile?.credits || 0}
-            </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              Available credits for policy summaries
-            </p>
-          </CardContent>
-        </Card>
+        {user && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Your Credits</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-4xl font-bold text-primary">
+                {profile?.credits || 0}
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Available credits for policy summaries
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {!user && (
+          <Card className="mb-8 border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950">
+            <CardHeader>
+              <CardTitle>Sign in to Purchase</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Create an account or sign in to start with 5 free credits and
+                purchase more whenever you need them.
+              </p>
+              <div className="flex gap-2">
+                <Link href="/auth/login">
+                  <Button>Sign In</Button>
+                </Link>
+                <Link href="/auth/signup">
+                  <Button variant="outline">Create Account</Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Pricing Plans */}
         <div className="space-y-6">

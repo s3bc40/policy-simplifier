@@ -15,7 +15,8 @@ export async function createCheckoutSession(formData: FormData) {
   } = await sessionClient.auth.getUser();
 
   if (!user) {
-    throw new Error("Unauthorized");
+    // Redirect to login instead of throwing error
+    redirect("/auth/login?redirect=/billing");
   }
 
   // Get user profile

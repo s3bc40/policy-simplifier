@@ -42,7 +42,7 @@ export async function updateSession(request: NextRequest) {
   const user = data?.claims;
 
   // Define public routes (accessible without authentication)
-  const publicRoutes = ["/", "/auth"];
+  const publicRoutes = ["/", "/auth", "/billing"];
 
   // Webhook endpoints should not require authentication
   const isWebhookRoute = request.nextUrl.pathname.startsWith("/api/webhooks/");
