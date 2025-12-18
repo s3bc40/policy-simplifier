@@ -10,7 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Check, ArrowLeft } from "lucide-react";
+import { Check, ArrowLeft, AlertCircle, Github } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default async function BillingPage() {
   const supabase = await createClient();
@@ -35,18 +36,54 @@ export default async function BillingPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-2xl font-bold">Buy Credits</h1>
-            <Link href="/summarize">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Summarize
+            <div className="flex gap-2 items-center">
+              <Button variant="ghost" size="sm" asChild>
+                <a
+                  href="https://github.com/s3bc40/policy-simplifier"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Github className="h-4 w-4 mr-2" />
+                  View Source
+                </a>
               </Button>
-            </Link>
+              {user ? (
+                <Link href="/summarize">
+                  <Button variant="ghost" size="sm">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back to Summarize
+                  </Button>
+                </Link>
+              ) : (
+                <Link href="/">
+                  <Button variant="ghost" size="sm">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back Home
+                  </Button>
+                </Link>
+              )}
+            </div>
           </div>
           <p className="text-sm text-muted-foreground">
             Each policy summary uses 1 credit
           </p>
         </div>
       </header>
+
+      {/* Demo Warning Banner - Discrete */}
+      <div className="border-b border-amber-200 dark:border-amber-900 bg-gradient-to-r from-amber-50/50 to-transparent dark:from-amber-950/30 dark:to-transparent">
+        <div className="container mx-auto px-4 py-2 flex justify-center">
+          <div className="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300 text-center">
+            <AlertCircle className="h-3 w-3 flex-shrink-0" />
+            <span>
+              <strong>Demo:</strong> Stripe test mode • Use card{" "}
+              <code className="bg-amber-100 dark:bg-amber-900 px-1 py-0.5 rounded text-xs">
+                4242 4242 4242 4242
+              </code>
+            </span>
+          </div>
+        </div>
+      </div>
 
       <main className="container mx-auto p-6 max-w-4xl">
         {/* Current Status */}

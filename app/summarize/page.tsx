@@ -4,7 +4,7 @@ import Link from "next/link";
 import { SummarizeForm } from "@/components/summarize-form";
 import { LogoutButton } from "@/components/logout-button";
 import { ModeToggle } from "@/components/mode-toggle";
-import { FileText } from "lucide-react";
+import { FileText, Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default async function SummarizePage() {
@@ -35,6 +35,16 @@ export default async function SummarizePage() {
             <span className="text-xl font-bold">PolicySimplifier</span>
           </div>
           <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" asChild>
+              <a
+                href="https://github.com/s3bc40/policy-simplifier"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Github className="h-4 w-4 mr-1" />
+                GitHub
+              </a>
+            </Button>
             {profile && (
               <div className="text-sm text-muted-foreground">
                 {profile.subscription_tier === "FREE" ? (

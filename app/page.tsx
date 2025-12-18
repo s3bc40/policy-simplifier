@@ -15,6 +15,15 @@ export default function LandingPage() {
         </div>
         <div className="flex gap-3 items-center">
           <ModeToggle />
+          <Button variant="ghost" size="sm" asChild>
+            <a
+              href="https://github.com/s3bc40/policy-simplifier"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View on GitHub
+            </a>
+          </Button>
           <Button variant="ghost" asChild>
             <Link href="/auth/login">Log In</Link>
           </Button>
