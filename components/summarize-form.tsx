@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { summarizePolicy } from "@/app/actions/summarize";
 import { PolicySummary } from "@/lib/schemas";
 
@@ -14,7 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2, RotateCcw } from "lucide-react";
 
 type ActionState = {
   result?: PolicySummary;
@@ -23,46 +23,103 @@ type ActionState = {
 
 const initialState: ActionState = {};
 
+// Skeleton Loader Component
+function SkeletonLoader() {
+  return (
+    <Card>
+      <CardHeader>
+        <div className="h-8 bg-muted rounded animate-pulse mb-2" />
+        <div className="h-4 bg-muted rounded animate-pulse w-1/2" />
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Top 3 Risks Skeleton */}
+        <div>
+          <div className="h-6 bg-muted rounded animate-pulse mb-3 w-1/3" />
+          <div className="p-4 border rounded-lg bg-muted/50">
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-4 bg-muted rounded animate-pulse" />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Key Requirements Skeleton */}
+        <div>
+          <div className="h-6 bg-muted rounded animate-pulse mb-3 w-1/3" />
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="p-4 border rounded-lg bg-muted/50">
+                <div className="h-4 bg-muted rounded animate-pulse mb-2 w-1/4" />
+                <div className="h-4 bg-muted rounded animate-pulse w-3/4" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Next Step Skeleton */}
+        <div>
+          <div className="h-6 bg-muted rounded animate-pulse mb-3 w-1/3" />
+          <div className="h-4 bg-muted rounded animate-pulse" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function SummarizeForm() {
   const [state, action, isPending] = useActionState(
     summarizePolicy,
     initialState
   );
+  const [shouldShowForm, setShouldShowForm] = useState(true);
   const hasResult = state.result && !state.error;
+
+  const handleReset = () => {
+    setShouldShowForm(true);
+    // Reset the form by reloading the page or clearing state
+    // Since useActionState doesn't provide a reset, we'll reload
+    window.location.href = "/summarize";
+  };
 
   return (
     <div className="space-y-6">
       {/* --- The Form --- */}
-      <form action={action} className="space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Policy Document</CardTitle>
-            <CardDescription>
-              Paste your security policy below (minimum 100 characters)
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Textarea
-              name="policyText"
-              rows={12}
-              placeholder="Paste your security policy text here..."
-              required
-              disabled={isPending}
-              className="resize-none"
-            />
-            <Button type="submit" disabled={isPending} className="w-full">
-              {isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Analyzing Policy...
-                </>
-              ) : (
-                "Analyze Policy and Check Limit"
-              )}
-            </Button>
-          </CardContent>
-        </Card>
-      </form>
+      {shouldShowForm && (
+        <form action={action} className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Policy Document</CardTitle>
+              <CardDescription>
+                Paste your security policy below (minimum 100 characters)
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Textarea
+                name="policyText"
+                rows={12}
+                placeholder="Paste your security policy text here..."
+                required
+                disabled={isPending}
+                className="resize-none"
+              />
+              <Button type="submit" disabled={isPending} className="w-full">
+                {isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Analyzing Policy...
+                  </>
+                ) : (
+                  "Analyze Policy and Check Limit"
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        </form>
+      )}
+
+      {/* --- Display Loading Skeleton --- */}
+      {isPending && <SkeletonLoader />}
 
       {/* --- Display Errors --- */}
       {state.error && (
@@ -76,14 +133,27 @@ export function SummarizeForm() {
       {/* --- Display Results --- */}
       {hasResult && state.result && (
         <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">{state.result.memoTitle}</CardTitle>
-            <CardDescription>
-              Target Audience:{" "}
-              <span className="font-semibold text-foreground">
-                {state.result.targetAudience}
-              </span>
-            </CardDescription>
+          <CardHeader className="flex flex-row items-start justify-between">
+            <div className="flex-1">
+              <CardTitle className="text-2xl">
+                {state.result.memoTitle}
+              </CardTitle>
+              <CardDescription>
+                Target Audience:{" "}
+                <span className="font-semibold text-foreground">
+                  {state.result.targetAudience}
+                </span>
+              </CardDescription>
+            </div>
+            <Button
+              onClick={handleReset}
+              variant="outline"
+              size="sm"
+              className="ml-4"
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              New Analysis
+            </Button>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Top 3 Risks */}

@@ -44,6 +44,9 @@ export async function updateSession(request: NextRequest) {
   // Define public routes (accessible without authentication)
   const publicRoutes = ["/", "/auth"];
 
+  // Webhook endpoints should not require authentication
+  const isWebhookRoute = request.nextUrl.pathname.startsWith("/api/webhooks/");
+
   const isPublicRoute = publicRoutes.some(
     (route) =>
       request.nextUrl.pathname === route ||
@@ -51,7 +54,8 @@ export async function updateSession(request: NextRequest) {
   );
 
   // Redirect unauthenticated users trying to access protected routes
-  if (!user && !isPublicRoute) {
+  // But skip webhooks and other API routes that need to be publicly accessible
+  if (!user && !isPublicRoute && !isWebhookRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
     url.searchParams.set("redirect", request.nextUrl.pathname);

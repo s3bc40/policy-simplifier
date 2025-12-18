@@ -48,9 +48,9 @@ export async function POST(req: NextRequest) {
         if (session.payment_status === "paid" && session.mode === "payment") {
           // Get credits amount
           let creditsAmount = 0;
-          if (priceKey === "CREDITS_50") creditsAmount = 50;
+          if (priceKey === "CREDITS_20") creditsAmount = 20;
+          else if (priceKey === "CREDITS_75") creditsAmount = 75;
           else if (priceKey === "CREDITS_200") creditsAmount = 200;
-          else if (priceKey === "CREDITS_500") creditsAmount = 500;
 
           if (creditsAmount > 0) {
             // Update profile credits

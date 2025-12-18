@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createCheckoutSession } from "@/app/actions/checkout";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Check } from "lucide-react";
+import { Check, ArrowLeft } from "lucide-react";
 
 export default async function BillingPage() {
   const supabase = await createClient();
@@ -31,8 +32,16 @@ export default async function BillingPage() {
     <div className="min-h-screen bg-linear-to-b from-background to-muted">
       <header className="border-b">
         <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold">Buy Credits</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-2xl font-bold">Buy Credits</h1>
+            <Link href="/summarize">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Summarize
+              </Button>
+            </Link>
+          </div>
+          <p className="text-sm text-muted-foreground">
             Each policy summary uses 1 credit
           </p>
         </div>
